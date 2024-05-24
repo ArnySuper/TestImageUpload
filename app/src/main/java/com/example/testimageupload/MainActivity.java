@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import android.media.MediaPlayer;
@@ -264,60 +265,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //TODO:REPRODUCTOR DE MUSICA
+
+    private String filePath;
+
     private void prepapreMediaPlayer(){
         // Aquí puedes actualizar la ImageView con la imagen descargada
         String fileName = URLToDownload.getNameArchivoAudioExtensionMP3();
-        String filepath = ManejadorDeDescargas.getMyDestinationPathPublicAudio(fileName);
-        mediaPlayer = PrepareMediaPlayer.inicializarMediaPlayer(filepath);
-        if(mediaPlayer != null){
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    releaseMediaPlayer();
-                }
-            });
-            Toast.makeText(MainActivity.this, "listo para reproducir", Toast.LENGTH_LONG).show();
-        }else{
-            Toast.makeText(MainActivity.this, "No se puedo prepara para reproducir", Toast.LENGTH_LONG).show();
-        }
+        filePath = ManejadorDeDescargas.getMyDestinationPathPublicAudio(fileName);
+
     }
 
     private void getStatusFrommBotton(){
 
-        if (mediaPlayer != null) {
-
-            if (isPlaying) {
-                pauseAudio();
-            } else {
-                playAudio();
-            }
+        if (isPlaying) {
+            pauseAudio();
+        } else {
+            playAudio();
         }
 
     }
 
     private void playAudio() {
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
-            tvDatos.setText("Pause");
-            isPlaying = true;
-        }
+        Intent playIntent = new Intent(this, MediaPlayerService.class);
+        playIntent.setAction("ACTION_PLAY");
+        playIntent.putExtra(MediaPlayerService.EXTRA_FILE_PATH, filePath);
+        startService(playIntent);
+        tvDatos.setText("Pause");
+        isPlaying = true;
     }
 
     private void pauseAudio() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            tvDatos.setText("Play");
-            isPlaying = false;
-        }
+        Intent pauseIntent = new Intent(this, MediaPlayerService.class);
+        pauseIntent.setAction("ACTION_PAUSE");
+        startService(pauseIntent);
+        tvDatos.setText("Play");
+        isPlaying = false;
     }
 
     private void stopAudio() {
-        if (mediaPlayer != null && (mediaPlayer.isPlaying() || isPlaying)) {
-            mediaPlayer.stop();
-            tvDatos.setText("Play");
-            isPlaying = false;
-            releaseMediaPlayer();
-        }
+        Intent stopIntent = new Intent(this, MediaPlayerService.class);
+        stopIntent.setAction("ACTION_STOP");
+        startService(stopIntent);
+        tvDatos.setText("Play");
+        isPlaying = false;
     }
 
     private void releaseMediaPlayer() {
