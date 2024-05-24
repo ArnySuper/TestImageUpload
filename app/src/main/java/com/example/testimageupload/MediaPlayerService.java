@@ -9,8 +9,10 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.widget.RemoteViews;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
 import java.io.IOException;
 
 public class MediaPlayerService extends Service {
@@ -61,11 +63,12 @@ public class MediaPlayerService extends Service {
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    stopSelf();
+                    stopAudio();
                 }
             });
         } catch (IOException e) {
             e.printStackTrace();
+            stopSelf();
         }
     }
 
@@ -90,33 +93,44 @@ public class MediaPlayerService extends Service {
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
+            isPlaying = false;
             stopForeground(true);
             stopSelf();
         }
     }
 
     private void showNotification() {
+        // Layout personalizado para la notificación
+        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_media_player);
+
+        // Intent para Play/Pause
         Intent playPauseIntent = new Intent(this, MediaPlayerService.class);
         playPauseIntent.setAction(isPlaying ? "ACTION_PAUSE" : "ACTION_PLAY");
         PendingIntent playPausePendingIntent = PendingIntent.getService(this, 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        // Intent para Stop
         Intent stopIntent = new Intent(this, MediaPlayerService.class);
         stopIntent.setAction("ACTION_STOP");
         PendingIntent stopPendingIntent = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        // Asignación de los Intents a los botones del layout
+        notificationLayout.setOnClickPendingIntent(R.id.notification_play_pause, playPausePendingIntent);
+        notificationLayout.setOnClickPendingIntent(R.id.notification_stop, stopPendingIntent);
+
+        // Configuración de los iconos de los botones
+        notificationLayout.setImageViewResource(R.id.notification_play_pause, isPlaying ? R.drawable.baseline_pause_circle_filled_48 : R.drawable.baseline_play_circle_filled_48);
+        notificationLayout.setImageViewResource(R.id.notification_stop, R.drawable.baseline_stop_circle_filled_48);
+
+        // Construcción de la notificación
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.baseline_circle_notifications_24)
                 .setContentTitle("HIMNOS NUEVOS APP")
                 .setContentText("Reproduciendo...")
-                .setSmallIcon(R.drawable.baseline_circle_notifications_24)
-                .addAction(new NotificationCompat.Action(
-                        isPlaying ? R.drawable.baseline_pause_circle_filled_48 : R.drawable.baseline_play_circle_filled_48,
-                        isPlaying ? "Pause" : "Play",
-                        playPausePendingIntent))
-                .addAction(new NotificationCompat.Action(
-                        R.drawable.baseline_stop_circle_filled_48, "Stop", stopPendingIntent))
+                .setCustomContentView(notificationLayout)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true);
 
+        // Mostrar la notificación en primer plano
         startForeground(1, notificationBuilder.build());
     }
 

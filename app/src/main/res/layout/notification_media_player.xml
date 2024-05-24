@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/notification_icon"
         android:layout_marginStart="8dp"
-        android:text="Media Player"
+        android:text="HIMNOS NUEVOS APP"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -28,24 +28,23 @@
         android:layout_below="@id/notification_title"
         android:layout_toRightOf="@id/notification_icon"
         android:layout_marginStart="8dp"
-        android:text="Playing audio"
+        android:text="Reproduciendo..."
         android:textSize="14sp" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/notification_play_pause"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/baseline_play_circle_filled_48" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/notification_stop"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_toLeftOf="@id/notification_play_pause"
         android:layout_marginEnd="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/baseline_delete_24" />
+        android:src="@drawable/baseline_stop_circle_filled_48" />
 
 </RelativeLayout>
+
